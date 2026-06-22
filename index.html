@@ -1,0 +1,696 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Money Mahjong</title>
+    <style>
+      :root {
+        --page: #282828;
+        --ink: #111;
+        --muted: #202020;
+        --line: #b7b7b7;
+        --panel: #f2f2f2;
+        --green: #175812;
+        --gold: #bb8425;
+        --rose: #b84b62;
+        --blue: #2c6795;
+        --tile-top: #fff4d7;
+        --tile-side: #b5a77f;
+        --tile-side-dark: #6d6250;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        min-height: 100dvh;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background:
+          linear-gradient(180deg, #171717, #323232),
+          var(--page);
+        color: var(--ink);
+        overflow: hidden;
+      }
+
+      button {
+        font: inherit;
+      }
+
+      .app {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        min-height: 100vh;
+        min-height: 100dvh;
+        margin: 0 auto;
+        padding: 0;
+        overflow: hidden;
+      }
+
+      .hud {
+        display: grid;
+        grid-template-columns: minmax(190px, 1fr) auto auto auto;
+        gap: 0;
+        align-items: stretch;
+        width: 100%;
+        margin: 0 auto;
+        border: 0;
+        border-bottom: 0;
+        border-radius: 0;
+        overflow: hidden;
+        background:
+          linear-gradient(90deg, rgba(255, 255, 255, 0.9), rgba(147, 188, 223, 0.52) 42%, rgba(255, 255, 255, 0.72)),
+          linear-gradient(180deg, #f5f9ff, #b8d4eb);
+      }
+
+      .title-block,
+      .stat,
+      .toolbar {
+        border: 0;
+        border-right: 1px solid rgba(64, 64, 64, 0.22);
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+        color: #111;
+      }
+
+      .title-block {
+        padding: 5px 10px 4px;
+      }
+
+      .eyebrow {
+        margin: 0 0 4px;
+        color: #333;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 16px;
+        line-height: 1.1;
+        letter-spacing: 0;
+      }
+
+      .stat {
+        min-width: 122px;
+        padding: 5px 9px;
+        display: grid;
+        align-content: center;
+        gap: 4px;
+      }
+
+      .stat span {
+        color: #353535;
+        font-size: 11px;
+        font-weight: 600;
+      }
+
+      .stat strong {
+        display: block;
+        color: #111;
+        font-size: 15px;
+        line-height: 1;
+        white-space: nowrap;
+      }
+
+      .toolbar {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+        justify-content: center;
+        padding: 4px 6px;
+      }
+
+      .tool-button {
+        width: 27px;
+        height: 25px;
+        border: 1px solid #808080;
+        border-radius: 2px;
+        background: linear-gradient(180deg, #fefefe, #d7d7d7);
+        color: var(--ink);
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 800;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      }
+
+      .tool-button:active {
+        transform: translateY(1px);
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.24);
+      }
+
+      .board-shell {
+        position: relative;
+        flex: 1 1 auto;
+        min-height: 0;
+        height: auto;
+        overflow: hidden;
+        border: 0;
+        border-top: 1px solid #b9b9b9;
+        border-radius: 0;
+        background:
+          radial-gradient(ellipse at 50% 45%, rgba(255, 244, 202, 0.22), transparent 52%),
+          repeating-linear-gradient(34deg, rgba(98, 59, 16, 0.12) 0 2px, transparent 2px 6px),
+          repeating-linear-gradient(-36deg, rgba(255, 239, 180, 0.08) 0 2px, transparent 2px 7px),
+          linear-gradient(180deg, #c89647, #a96f2b 55%, #8d5a22);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.44),
+          inset 0 0 70px rgba(67, 39, 12, 0.24),
+          0 18px 38px rgba(0, 0, 0, 0.28);
+        perspective: none;
+      }
+
+      .board-shell::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        border: 0;
+        border-radius: 0;
+        pointer-events: none;
+        box-shadow: inset 0 0 48px rgba(75, 44, 15, 0.32);
+      }
+
+      .board {
+        position: relative;
+        z-index: 1;
+        width: 840px;
+        height: 560px;
+        margin: 0;
+        transform-origin: top left;
+      }
+
+      .tile {
+        --face: #2f8f62;
+        --face-dark: #17603f;
+        --face-soft: #e8f6ee;
+        --lift: 0px;
+        --shadow-y: 4px;
+        --shadow-blur: 5px;
+        position: absolute;
+        width: 41px;
+        height: 72px;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        color: var(--ink);
+        cursor: pointer;
+        transform: translate3d(0, var(--lift), 0);
+        transform-origin: center bottom;
+        transition: transform 160ms ease, opacity 180ms ease, filter 160ms ease;
+        filter:
+          drop-shadow(2px 3px 2px rgba(0, 0, 0, 0.52))
+          drop-shadow(0 var(--shadow-y) var(--shadow-blur) rgba(0, 0, 0, 0.2));
+      }
+
+      .tile::before {
+        content: "";
+        position: absolute;
+        left: 3px;
+        top: 72px;
+        z-index: 1;
+        width: 39px;
+        height: 3px;
+        border-radius: 0 0 4px 4px;
+        background: linear-gradient(180deg, var(--tile-side), var(--tile-side-dark));
+        pointer-events: none;
+      }
+
+      .tile::after {
+        content: "";
+        position: absolute;
+        left: 41px;
+        top: 3px;
+        z-index: 1;
+        width: 3px;
+        height: 69px;
+        border-radius: 0 4px 4px 0;
+        background: linear-gradient(90deg, var(--tile-side), var(--tile-side-dark));
+        pointer-events: none;
+      }
+
+      .tile-face {
+        position: absolute;
+        inset: 0;
+        z-index: 3;
+        display: grid;
+        place-items: center;
+        padding: 0;
+        border: 1px solid #8a7c5f;
+        border-radius: 5px;
+        background: var(--tile-top);
+        box-shadow:
+          inset 1px 1px 0 rgba(255, 255, 255, 0.36),
+          inset -1px -1px 0 rgba(106, 83, 49, 0.2);
+        color: var(--ink);
+        text-align: center;
+        overflow: hidden;
+      }
+
+      .tile-face::before {
+        content: none;
+        position: absolute;
+        inset: 3px;
+        border: 1px solid rgba(121, 96, 59, 0.22);
+        border-radius: 3px;
+        background:
+          linear-gradient(135deg, rgba(255, 255, 255, 0.72), transparent 38%),
+          var(--face-soft);
+        pointer-events: none;
+      }
+
+      .tile-face::after {
+        content: none;
+        position: absolute;
+        left: 9px;
+        right: 9px;
+        top: 5px;
+        height: 3px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.58);
+        pointer-events: none;
+      }
+
+      .tile-face > span {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        place-items: center;
+        width: 100%;
+        height: 100%;
+        border: 0;
+        border-radius: 4px;
+        background: transparent;
+        box-shadow: none;
+        color: var(--face-dark);
+        overflow: hidden;
+      }
+
+      .tile-face > span::before {
+        content: none;
+        width: 12px;
+        height: 12px;
+        margin-bottom: 2px;
+        border: 2px solid var(--face);
+        border-radius: 50%;
+        background:
+          radial-gradient(circle, transparent 0 35%, var(--face) 36% 48%, transparent 49%),
+          repeating-conic-gradient(from 0deg, var(--face) 0 12deg, transparent 12deg 24deg);
+        opacity: 0.9;
+      }
+
+      .tile-image {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        z-index: 3;
+        width: 72px;
+        height: 41px;
+        object-fit: fill;
+        border-radius: 4px;
+        transform: translate(-50%, -50%) rotate(90deg);
+        transform-origin: center center;
+        box-shadow: none;
+      }
+
+      .tile-fallback {
+        position: relative;
+        z-index: 2;
+        display: grid;
+        place-items: center;
+      }
+
+      .tile.has-loaded-image .tile-face > span::before,
+      .tile.has-loaded-image .tile-fallback {
+        display: none;
+      }
+
+      .tile.has-loaded-image .tile-face {
+        border-color: rgba(65, 56, 41, 0.42);
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .tile.has-loaded-image .tile-face > span {
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .tile-main {
+        display: block;
+        font-size: 10px;
+        font-weight: 900;
+        line-height: 1;
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.42);
+      }
+
+      .tile-sub {
+        display: block;
+        margin-top: 1px;
+        font-size: 6px;
+        font-weight: 800;
+        color: var(--face);
+        opacity: 0.86;
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.42);
+      }
+
+      .tile.is-blocked {
+        cursor: default;
+        filter:
+          saturate(0.88)
+          brightness(0.96)
+          drop-shadow(2px 3px 2px rgba(0, 0, 0, 0.38))
+          drop-shadow(0 var(--shadow-y) var(--shadow-blur) rgba(8, 18, 17, 0.18));
+      }
+
+      .tile.is-blocked .tile-face {
+        box-shadow:
+          inset 1px 1px 0 rgba(255, 255, 255, 0.76),
+          inset -1px -1px 0 rgba(116, 83, 43, 0.28),
+          inset 0 -8px 12px rgba(90, 69, 43, 0.24);
+      }
+
+      .tile.is-selectable:hover,
+      .tile.is-selected {
+        --lift: -6px;
+        --shadow-y: 9px;
+        --shadow-blur: 12px;
+        filter:
+          drop-shadow(0 var(--shadow-y) var(--shadow-blur) rgba(8, 18, 17, 0.28))
+          drop-shadow(3px 5px 3px rgba(24, 18, 11, 0.28));
+      }
+
+      .tile.is-selected {
+        --lift: -7px;
+      }
+
+      .tile.is-selected .tile-face {
+        border-color: #e6ae24;
+        box-shadow:
+          inset 1px 1px 0 rgba(255, 255, 255, 0.98),
+          inset -1px -1px 0 rgba(116, 83, 43, 0.26),
+          inset 0 -6px 10px rgba(138, 103, 59, 0.16),
+          0 0 0 3px rgba(240, 189, 68, 0.64),
+          0 0 18px rgba(240, 189, 68, 0.38);
+      }
+
+      .tile.is-hint {
+        --lift: -7px;
+      }
+
+      .tile.is-hint .tile-face {
+        border-color: #2e7db8;
+        box-shadow:
+          inset 1px 1px 0 rgba(255, 255, 255, 0.98),
+          inset -1px -1px 0 rgba(116, 83, 43, 0.26),
+          0 0 0 3px rgba(58, 135, 194, 0.62),
+          0 0 18px rgba(58, 135, 194, 0.36);
+      }
+
+      .tile.is-removing {
+        opacity: 0;
+        transform: translateY(-42px) scale(0.9) rotate(-3deg);
+        pointer-events: none;
+      }
+
+      .tile.is-shake {
+        animation: shake 260ms ease;
+      }
+
+      .face-krw-1000 { --face: #527d9c; --face-dark: #254b67; --face-soft: #e8f0f6; }
+      .face-krw-5000 { --face: #c78142; --face-dark: #8a4c1c; --face-soft: #f6eadf; }
+      .face-krw-10000 { --face: #2f8f62; --face-dark: #17603f; --face-soft: #e6f4eb; }
+      .face-krw-50000 { --face: #caa54e; --face-dark: #876117; --face-soft: #fbf0cd; }
+      .face-usd-10 { --face: #5b8d56; --face-dark: #2f6030; --face-soft: #edf5e8; }
+      .face-usd-100 { --face: #3f7462; --face-dark: #1d4c3d; --face-soft: #e4f1ed; }
+      .face-gold-bar { --face: #d1a228; --face-dark: #805b09; --face-soft: #fff1be; }
+      .face-coin-stack { --face: #b98b2f; --face-dark: #765313; --face-soft: #f9edcf; }
+      .face-family-photo { --face: #b95374; --face-dark: #79304a; --face-soft: #fae7ee; }
+      .face-parents-photo { --face: #9859a8; --face-dark: #62356e; --face-soft: #f1e8f5; }
+      .face-massage-coupon { --face: #2e74aa; --face-dark: #1b4e77; --face-soft: #e4eff8; }
+      .face-dinner-coupon { --face: #b7513a; --face-dark: #793022; --face-soft: #f7e7e2; }
+
+      .toast {
+        position: fixed;
+        left: 50%;
+        bottom: 24px;
+        z-index: 5000;
+        max-width: min(520px, calc(100vw - 32px));
+        padding: 12px 16px;
+        border: 1px solid rgba(23, 33, 43, 0.18);
+        border-radius: 8px;
+        background: rgba(23, 33, 43, 0.94);
+        color: #fff;
+        font-weight: 750;
+        transform: translate(-50%, 18px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 160ms ease, transform 160ms ease;
+      }
+
+      .toast.is-visible {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+
+      .match-particle {
+        position: fixed;
+        left: var(--x);
+        top: var(--y);
+        z-index: 7000;
+        width: var(--size);
+        height: calc(var(--size) * 1.55);
+        border-radius: 999px 999px 999px 2px;
+        background: var(--color);
+        box-shadow: 0 0 3px rgba(255, 255, 255, 0.55);
+        pointer-events: none;
+        opacity: 0;
+        transform: translate(-50%, -50%) rotate(var(--rot)) scale(0.7);
+        animation: match-petal 1400ms cubic-bezier(0.13, 0.82, 0.22, 1) forwards;
+      }
+
+      .firework {
+        position: fixed;
+        left: var(--x);
+        top: var(--y);
+        z-index: 6500;
+        width: var(--size);
+        height: var(--size);
+        border-radius: 50%;
+        background: var(--color);
+        box-shadow: 0 0 8px var(--color);
+        pointer-events: none;
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.6);
+        animation: firework-burst 1180ms cubic-bezier(0.1, 0.75, 0.22, 1) forwards;
+      }
+
+      .confetti-strip {
+        position: fixed;
+        left: var(--x);
+        top: -18px;
+        z-index: 6500;
+        width: var(--w);
+        height: var(--h);
+        border-radius: 2px;
+        background: var(--color);
+        pointer-events: none;
+        opacity: 0.95;
+        transform: rotate(var(--rot));
+        animation: confetti-fall var(--duration) linear forwards;
+      }
+
+      .clear-panel {
+        position: fixed;
+        inset: 0;
+        z-index: 6000;
+        display: none;
+        place-items: center;
+        padding: 24px;
+        background: rgba(23, 33, 43, 0.44);
+      }
+
+      .clear-panel.is-visible {
+        display: grid;
+      }
+
+      .clear-card {
+        width: min(420px, 100%);
+        padding: 26px 24px;
+        border: 1px solid rgba(255, 255, 255, 0.48);
+        border-radius: 8px;
+        background:
+          radial-gradient(circle at 50% 0%, rgba(255, 224, 112, 0.34), transparent 42%),
+          #fffaf1;
+        text-align: center;
+        box-shadow: 0 22px 54px rgba(0, 0, 0, 0.24);
+      }
+
+      .clear-card h2 {
+        margin: 0 0 10px;
+        font-size: 30px;
+      }
+
+      .clear-card p {
+        margin: 0 0 18px;
+        color: var(--muted);
+      }
+
+      .clear-amount {
+        display: block;
+        margin: 8px 0 18px;
+        color: #1f6f55;
+        font-size: clamp(34px, 8vw, 56px);
+        font-weight: 950;
+        line-height: 1;
+      }
+
+      .primary-button {
+        min-height: 44px;
+        padding: 0 18px;
+        border: 0;
+        border-radius: 8px;
+        background: var(--green);
+        color: #fff;
+        font-weight: 850;
+        cursor: pointer;
+      }
+
+      @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-4px); }
+        75% { transform: translateX(4px); }
+      }
+
+      @keyframes match-petal {
+        0% {
+          opacity: 0.95;
+          transform: translate(-50%, -50%) rotate(var(--rot)) scale(0.7);
+        }
+
+        45% {
+          opacity: 0.95;
+        }
+
+        100% {
+          opacity: 0;
+          transform:
+            translate(calc(-50% + var(--dx)), calc(-50% + var(--dy)))
+            rotate(calc(var(--rot) + 260deg))
+            scale(0.2);
+        }
+      }
+
+      @keyframes firework-burst {
+        0% {
+          opacity: 1;
+          transform: translate(-50%, -50%) scale(0.6);
+        }
+
+        70% {
+          opacity: 0.95;
+        }
+
+        100% {
+          opacity: 0;
+          transform:
+            translate(calc(-50% + var(--dx)), calc(-50% + var(--dy)))
+            scale(0.15);
+        }
+      }
+
+      @keyframes confetti-fall {
+        0% {
+          opacity: 0.95;
+          transform: translateY(0) rotate(var(--rot));
+        }
+
+        100% {
+          opacity: 0;
+          transform: translateY(calc(100vh + 40px)) rotate(calc(var(--rot) + 720deg));
+        }
+      }
+
+      @media (max-width: 820px) {
+        .app {
+          width: 100%;
+          padding: 0;
+        }
+
+        .hud {
+          grid-template-columns: 1fr 1fr;
+          border-radius: 0;
+        }
+
+        .toolbar {
+          justify-content: end;
+        }
+
+        .board-shell {
+          min-height: 0;
+          height: auto;
+          border-left: 0;
+          border-right: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <section class="hud" aria-label="게임 상태">
+        <div class="title-block">
+          <p class="eyebrow">Money Mahjong</p>
+          <h1>생신 용돈 마작</h1>
+        </div>
+        <div class="stat">
+          <span>누적 획득</span>
+          <strong id="reward-total">₩0</strong>
+        </div>
+        <div class="stat">
+          <span>남은 지폐</span>
+          <strong id="tile-count">144</strong>
+        </div>
+        <div class="stat timer-stat">
+          <span>남은 시간</span>
+          <strong id="time-left">02:00</strong>
+        </div>
+        <div class="toolbar" aria-label="게임 도구">
+          <button class="tool-button" id="hint-button" type="button" title="힌트">?</button>
+          <button class="tool-button" id="shuffle-button" type="button" title="섞기">⇄</button>
+          <button class="tool-button" id="restart-button" type="button" title="새 게임">↻</button>
+        </div>
+      </section>
+
+      <section class="board-shell" aria-label="마작 보드">
+        <div class="board" id="board"></div>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <div class="clear-panel" id="clear-panel" aria-hidden="true">
+      <div class="clear-card">
+        <h2 id="result-title">Clear</h2>
+        <p id="result-label">최종 획득 금액</p>
+        <strong class="clear-amount" id="clear-message">₩0</strong>
+        <button class="primary-button" id="clear-restart-button" type="button">새 게임</button>
+      </div>
+    </div>
+
+    <script src="./src/browser-demo.js" defer></script>
+  </body>
+</html>

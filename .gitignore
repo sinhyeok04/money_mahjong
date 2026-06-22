@@ -1,0 +1,8 @@
+.chrome-mobile-profile/
+dev-server.*.log
+remote-tunnel.log
+cloudflare-tunnel.log
+mobile-preview-*.png
+node_modules/
+.DS_Store
+Thumbs.db
