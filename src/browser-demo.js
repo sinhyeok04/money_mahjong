@@ -171,7 +171,7 @@
       face.append(createTilePrint(tile, button));
       button.append(face);
 
-      button.addEventListener("pointerup", (event) => {
+      button.addEventListener("pointerdown", (event) => {
         if (event.pointerType !== "touch") return;
 
         event.preventDefault();
@@ -229,15 +229,12 @@
     }
 
     if (!selectedTileId) {
-      selectedTileId = tileId;
-      hintTileIds = new Set();
-      renderBoard();
+      setSelectedTile(tileId);
       return;
     }
 
     if (selectedTileId === tileId) {
-      selectedTileId = null;
-      renderBoard();
+      setSelectedTile(null);
       return;
     }
 
@@ -247,10 +244,22 @@
       return;
     }
 
+    setSelectedTile(tileId);
+    showToast("같은 화폐 타일끼리 맞출 수 있습니다.");
+  }
+
+  function setSelectedTile(tileId) {
     selectedTileId = tileId;
     hintTileIds = new Set();
-    renderBoard();
-    showToast("같은 화폐 타일끼리 맞출 수 있습니다.");
+
+    for (const element of boardElement.querySelectorAll(".tile.is-selected, .tile.is-hint")) {
+      element.classList.remove("is-selected", "is-hint");
+    }
+
+    if (!tileId) return;
+
+    const selectedElement = boardElement.querySelector(`[data-tile-id="${tileId}"]`);
+    selectedElement?.classList.add("is-selected");
   }
 
   function animateAndRemovePair(firstTileId, secondTileId) {
