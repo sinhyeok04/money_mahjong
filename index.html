@@ -218,7 +218,7 @@
         -webkit-tap-highlight-color: transparent;
         transform: translate3d(0, var(--lift), 0);
         transform-origin: center bottom;
-        transition: transform 38ms ease-out, opacity 130ms ease;
+        transition: transform 24ms ease-out, opacity 130ms ease;
         will-change: transform;
         backface-visibility: hidden;
         filter:
@@ -413,8 +413,7 @@
           inset 0 -8px 12px rgba(90, 69, 43, 0.24);
       }
 
-      .tile.is-selectable:hover,
-      .tile.is-selected {
+      .tile.is-selectable:hover {
         --lift: -6px;
         --shadow-y: 9px;
         --shadow-blur: 12px;
@@ -425,6 +424,7 @@
 
       .tile.is-selected {
         --lift: -7px;
+        transition-duration: 0ms, 130ms;
       }
 
       .tile.is-selected .tile-face {
@@ -760,6 +760,6 @@
       </div>
     </div>
 
-    <script src="./src/browser-demo.js?v=20260623-faster-select" defer></script>
+    <script src="./src/browser-demo.js?v=20260623-instant-select" defer></script>
   </body>
 </html>
