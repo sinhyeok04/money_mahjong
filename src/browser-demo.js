@@ -104,6 +104,9 @@
   document.querySelector("#shuffle-button").addEventListener("click", shuffleRemainingFaces);
   document.querySelector("#restart-button").addEventListener("click", startNewGame);
   document.querySelector("#clear-restart-button").addEventListener("click", startNewGame);
+  document.addEventListener("dragstart", preventPageDrag);
+  document.addEventListener("selectstart", preventPageDrag);
+  boardElement.addEventListener("touchmove", preventPageDrag, { passive: false });
   window.addEventListener("keydown", handleDebugKeys);
   window.addEventListener("resize", () => {
     if (board) setBoardDimensions(board.visualMetrics);
@@ -546,6 +549,7 @@
     image.className = "tile-image";
     image.src = tile.image;
     image.alt = "";
+    image.draggable = false;
     image.addEventListener("load", () => {
       tileButton.classList.add("has-loaded-image");
     });
@@ -792,6 +796,10 @@
     window.clearTimeout(timeNoticeTimer);
     timeNoticeElement.classList.remove("is-visible");
     timeNoticeElement.textContent = "";
+  }
+
+  function preventPageDrag(event) {
+    event.preventDefault();
   }
 
   function formatWon(value) {

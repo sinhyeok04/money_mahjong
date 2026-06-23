@@ -23,6 +23,8 @@
 
       * {
         box-sizing: border-box;
+        user-select: none;
+        -webkit-user-select: none;
       }
 
       html,
@@ -40,6 +42,7 @@
           var(--page);
         color: var(--ink);
         overflow: hidden;
+        -webkit-touch-callout: none;
       }
 
       button {
@@ -343,6 +346,8 @@
         transform: translate(-50%, -50%) rotate(90deg);
         transform-origin: center center;
         box-shadow: none;
+        user-select: none;
+        -webkit-user-drag: none;
       }
 
       .tile-fallback {
