@@ -4,7 +4,7 @@
   const TILE_SPAN = Object.freeze({ width: 2, height: 2 });
   const TILE_WIDTH = 41;
   const TILE_HEIGHT = 72;
-  const TILE_SIDE_DEPTH = 4;
+  const TILE_SIDE_DEPTH = 7;
   const BOARD_PADDING_X = 44;
   const BOARD_PADDING_Y = 28;
   const GRID_X = TILE_WIDTH / TILE_SPAN.width;
@@ -92,6 +92,7 @@
   let hintTileIds = new Set();
   let toastTimer = 0;
   let timeNoticeTimer = 0;
+  let suppressSyntheticClickUntil = 0;
   let seedCount = 1;
   let clearCelebrated = false;
   let timeLeft = 120;
@@ -156,8 +157,9 @@
       button.style.left = `${position.left}px`;
       button.style.top = `${position.top}px`;
       button.style.zIndex = String(position.zIndex);
-      button.style.setProperty("--shadow-y", `${4 + tile.z}px`);
-      button.style.setProperty("--shadow-blur", `${5 + tile.z}px`);
+      button.style.setProperty("--shadow-x", `${2 + tile.z}px`);
+      button.style.setProperty("--shadow-y", `${6 + (tile.z * 2)}px`);
+      button.style.setProperty("--shadow-blur", `${6 + (tile.z * 2)}px`);
       button.dataset.tileId = tile.id;
       button.setAttribute("aria-label", `${tile.label} ${formatWon(tile.reward)}`);
 
@@ -166,7 +168,17 @@
       face.append(createTilePrint(tile, button));
       button.append(face);
 
-      button.addEventListener("click", () => handleTileClick(tile.id));
+      button.addEventListener("pointerup", (event) => {
+        if (event.pointerType !== "touch") return;
+
+        event.preventDefault();
+        suppressSyntheticClickUntil = performance.now() + 500;
+        handleTileClick(tile.id);
+      });
+      button.addEventListener("click", () => {
+        if (performance.now() < suppressSyntheticClickUntil) return;
+        handleTileClick(tile.id);
+      });
       boardElement.append(button);
     }
 
