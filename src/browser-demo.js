@@ -79,7 +79,9 @@
   const rewardElement = document.querySelector("#reward-total");
   const countElement = document.querySelector("#tile-count");
   const timeElement = document.querySelector("#time-left");
+  const timerStatElement = document.querySelector(".timer-stat");
   const toastElement = document.querySelector("#toast");
+  const timeNoticeElement = document.querySelector("#time-notice");
   const clearPanel = document.querySelector("#clear-panel");
   const clearMessage = document.querySelector("#clear-message");
   const resultTitle = document.querySelector("#result-title");
@@ -89,9 +91,11 @@
   let selectedTileId = null;
   let hintTileIds = new Set();
   let toastTimer = 0;
+  let timeNoticeTimer = 0;
   let seedCount = 1;
   let clearCelebrated = false;
   let timeLeft = 120;
+  let extraMinuteCount = 0;
   let timerId = null;
   let gameEnded = false;
 
@@ -114,8 +118,10 @@
     clearCelebrated = false;
     gameEnded = false;
     timeLeft = 120;
+    extraMinuteCount = 0;
     stopTimer();
     updateTimerDisplay();
+    hideTimeNotice();
     clearPanel.classList.remove("is-visible");
     clearPanel.setAttribute("aria-hidden", "true");
     renderBoard();
@@ -179,6 +185,7 @@
   function showClearCelebration(options = {}) {
     gameEnded = true;
     stopTimer();
+    hideTimeNotice();
     resultTitle.textContent = options.title ?? "Clear";
     resultLabel.textContent = options.label ?? "최종 획득 금액";
     clearMessage.textContent = formatWon(board.rewardTotal);
@@ -632,13 +639,13 @@
     });
   }
 
-  function showToast(message) {
+  function showToast(message, duration = 1600) {
     window.clearTimeout(toastTimer);
     toastElement.textContent = message;
     toastElement.classList.add("is-visible");
     toastTimer = window.setTimeout(() => {
       toastElement.classList.remove("is-visible");
-    }, 1600);
+    }, duration);
   }
 
   function spawnMatchBurst(...elements) {
@@ -719,8 +726,7 @@
       updateTimerDisplay();
 
       if (timeLeft === 0) {
-        stopTimer();
-        showClearCelebration({ title: "Time Up", label: "현재 획득 금액", celebrate: false });
+        grantExtraMinuteIfNeeded();
       }
     }, 1000);
   }
@@ -735,6 +741,45 @@
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;
     timeElement.textContent = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+  }
+
+  function grantExtraMinuteIfNeeded() {
+    if (gameEnded) return;
+
+    if (activeTiles(board.tiles).length === 0) {
+      showClearCelebration({ title: "Clear", label: "최종 획득 금액", celebrate: true });
+      return;
+    }
+
+    extraMinuteCount += 1;
+    timeLeft = 60;
+    updateTimerDisplay();
+    pulseTimer();
+    showTimeNotice(`시간 종료! 추가 시간 1분이 지급됐습니다. (${extraMinuteCount}번째 연장)`);
+  }
+
+  function pulseTimer() {
+    timerStatElement.classList.remove("is-extended");
+    window.requestAnimationFrame(() => {
+      timerStatElement.classList.add("is-extended");
+    });
+  }
+
+  function showTimeNotice(message) {
+    window.clearTimeout(timeNoticeTimer);
+    timeNoticeElement.textContent = message;
+    timeNoticeElement.classList.add("is-visible");
+    showToast("추가 시간 1분!", 2600);
+
+    timeNoticeTimer = window.setTimeout(() => {
+      timeNoticeElement.classList.remove("is-visible");
+    }, 3600);
+  }
+
+  function hideTimeNotice() {
+    window.clearTimeout(timeNoticeTimer);
+    timeNoticeElement.classList.remove("is-visible");
+    timeNoticeElement.textContent = "";
   }
 
   function formatWon(value) {

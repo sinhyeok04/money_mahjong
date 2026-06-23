@@ -467,6 +467,40 @@
         transform: translate(-50%, 0);
       }
 
+      .time-notice {
+        position: fixed;
+        left: 50%;
+        top: 88px;
+        z-index: 5200;
+        width: min(360px, calc(100vw - 28px));
+        padding: 12px 14px;
+        border: 1px solid rgba(255, 255, 255, 0.48);
+        border-radius: 8px;
+        background:
+          linear-gradient(180deg, rgba(255, 250, 232, 0.98), rgba(255, 225, 148, 0.96));
+        color: #3d2710;
+        font-size: 14px;
+        font-weight: 850;
+        text-align: center;
+        box-shadow:
+          0 12px 28px rgba(0, 0, 0, 0.26),
+          inset 0 1px 0 rgba(255, 255, 255, 0.74);
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, -10px);
+        transition: opacity 180ms ease, transform 180ms ease;
+      }
+
+      .time-notice.is-visible {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+
+      .timer-stat.is-extended strong {
+        color: #a44912;
+        animation: timer-pop 680ms ease;
+      }
+
       .match-particle {
         position: fixed;
         left: var(--x);
@@ -576,6 +610,11 @@
         75% { transform: translateX(4px); }
       }
 
+      @keyframes timer-pop {
+        0%, 100% { transform: scale(1); }
+        40% { transform: scale(1.18); }
+      }
+
       @keyframes match-petal {
         0% {
           opacity: 0.95;
@@ -681,6 +720,7 @@
     </main>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <div class="time-notice" id="time-notice" role="status" aria-live="polite"></div>
 
     <div class="clear-panel" id="clear-panel" aria-hidden="true">
       <div class="clear-card">
