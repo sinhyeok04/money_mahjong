@@ -535,17 +535,18 @@
     const shellWidth = boardShellElement.clientWidth;
     const shellHeight = boardShellElement.clientHeight;
     const horizontalPadding = shellWidth <= 520 ? 20 : 32;
-    const topPadding = Math.round(Math.max(14, Math.min(48, shellHeight * 0.055)));
-    const bottomPadding = shellWidth <= 520 ? 16 : 28;
+    const verticalPadding = shellWidth <= 520 ? 20 : 32;
     const availableWidth = Math.max(shellWidth - horizontalPadding, 160);
-    const availableHeight = Math.max(shellHeight - topPadding - bottomPadding, 160);
+    const availableHeight = Math.max(shellHeight - verticalPadding, 160);
     const scale = Math.min(1, availableWidth / metrics.width, availableHeight / metrics.height);
     const scaledWidth = metrics.width * scale;
+    const scaledHeight = metrics.height * scale;
     const leftOffset = Math.max(0, (shellWidth - scaledWidth) / 2);
+    const topOffset = Math.max(0, (shellHeight - scaledHeight) / 2);
 
     boardElement.style.width = `${metrics.width}px`;
     boardElement.style.height = `${metrics.height}px`;
-    boardElement.style.margin = `${topPadding}px 0 0 ${leftOffset}px`;
+    boardElement.style.margin = `${Math.round(topOffset)}px 0 0 ${leftOffset}px`;
     boardElement.style.transformOrigin = "top left";
     boardElement.style.transform = `scale(${scale})`;
   }
